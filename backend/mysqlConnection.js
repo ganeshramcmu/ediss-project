@@ -7,8 +7,8 @@ module.exports.createMysqlConnection = function()
 
 	var connection = mysql.createConnection({
 		host : 'localhost',
-		user : 'root',
-		password : 'ediss1',
+		user : 'ediss',
+		password : 'edissproject',
 		database : 'edissDB'
 	});
 

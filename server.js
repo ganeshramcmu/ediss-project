@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 var multer = require('multer');
 var app = express();
 var loginHandler = require('./backend/login.js');
+var customerFunctions = require('./backend/customerFunctions.js');
 var globals = require('./globals');
 
 app.use(session({
@@ -30,11 +31,11 @@ SERVER_PORT = globals.SERVER_PORT;
 
 app.get('/', function(req, res){
    if (req.session.userDetails)
-	{
+	{	
 		res.redirect(302, SERVER_URI_PREFIX + "/arith");
 	}
 	else
-	{
+	{	
 		res.status(200);
 		res.setHeader("Content-Type", "text/html");
 		res.sendFile(path.join(__dirname, '/index.html'));
@@ -63,5 +64,11 @@ app.get('/arith',loginHandler.checkSession,function(req, res)
 {
 	res.sendFile(path.join(__dirname, '/public/views/postLogin.html'));
 });
+
+app.get("/getUserDetails", loginHandler.checkSession, customerFunctions.getUserDetails);
+app.post("/add", loginHandler.checkSession, customerFunctions.addNumbers);
+app.post("/sub", loginHandler.checkSession, customerFunctions.subNumbers);
+app.post("/mul", loginHandler.checkSession, customerFunctions.mulNumbers);
+app.post("/div", loginHandler.checkSession, customerFunctions.divNumbers);
 
 app.listen(3000);

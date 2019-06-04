@@ -44,16 +44,16 @@ module.exports.logout = function(req, res, next)
   res.status(200);
   response = {};
   response.statusCode = 302;
-  response.redirectUrl = SERVER_URI_PREFIX + "/#/login";
+  response.redirectUrl = SERVER_URI_PREFIX;
   res.send(JSON.stringify(response));
 };
 
 module.exports.login = function(req, res, returnCode)
 {
   user = req.body.user;
-  var userid = user.userid;
-  var password = user.pwd;
-  var authQuery = "SELECT userid, password FROM edissDB.UserProfile WHERE userid = " + "'" + userid + "';";
+  var username = user.username;
+  var password = user.password;
+  var authQuery = "SELECT userid, username, password FROM edissDB.UserProfile WHERE username = " + "'" + username + "';";
 
   var connection = mysqlConnection.createMysqlConnection();
   response = {};
@@ -100,7 +100,7 @@ module.exports.login = function(req, res, returnCode)
               connection.end();
               module.exports.destroySession(req.session, user);
               response.statusCode = 500;
-              response.message = "Try again";
+              response.message = "Please try again";
               returnCode(500,JSON.stringify(response));
             }
             else
