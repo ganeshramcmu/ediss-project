@@ -1,7 +1,7 @@
 module.exports = {};
 
-testing=true;
-if (testing) {
+module.exports.testing=true;
+if (module.exports.testing) {
 	module.exports.SERVER_URI_PREFIX = "http://localhost:3000";
 }
 else{

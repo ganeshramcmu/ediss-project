@@ -1,14 +1,19 @@
 var mysql = require('../node_modules/mysql');
+var globals = require('../globals.js');
 
 module.exports = {};
 
 module.exports.createMysqlConnection = function()
 {
+	user_password = "edissproject";
+	if (!globals.testing) {
+		user_password = "EdissProject123$";
+	}
 
 	var connection = mysql.createConnection({
 		host : 'localhost',
 		user : 'ediss',
-		password : 'edissproject',
+		password : user_password,
 		database : 'edissDB'
 	});
 
