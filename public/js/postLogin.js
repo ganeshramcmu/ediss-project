@@ -30,7 +30,7 @@ $(document).ready(function(){
         }
       },
       error:function(err){
-        
+
       }
     });
   }
@@ -46,7 +46,6 @@ $(document).ready(function(){
         number2: $("#num2").val()
       },
       success: function(data, status){
-        console.log(status);
         data=JSON.parse(data);
         if (data.statusCode == 200) {
           $("#addition").text("The result is "+data.result);
