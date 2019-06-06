@@ -68,7 +68,7 @@ app.get('/arith',loginHandler.checkSession,function(req, res)
 app.get("/getUserDetails", loginHandler.checkSession, customerFunctions.getUserDetails);
 app.post("/add", loginHandler.checkSession, customerFunctions.addNumbers);
 app.post("/sub", loginHandler.checkSession, customerFunctions.subNumbers);
-app.post("/mul", loginHandler.checkSession, customerFunctions.mulNumbers);
-app.post("/div", loginHandler.checkSession, customerFunctions.divNumbers);
+app.post("/multiply", loginHandler.checkSession, customerFunctions.mulNumbers);
+app.post("/divide", loginHandler.checkSession, customerFunctions.divNumbers);
 
 app.listen(3000);

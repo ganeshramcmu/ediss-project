@@ -42,8 +42,8 @@ $(document).ready(function(){
       method:"post",
       url:"/add",
       data:{
-        number1: $("#num1").val(),
-        number2: $("#num2").val()
+        num1: $("#num1").val(),
+        num2: $("#num2").val()
       },
       success: function(data, status){
         data=JSON.parse(data);
@@ -65,8 +65,8 @@ $(document).ready(function(){
       method:"post",
       url:"/sub",
       data:{
-        number1: $("#num11").val(),
-        number2: $("#num22").val()
+        num1: $("#num11").val(),
+        num2: $("#num22").val()
       },
       success: function(data, status){
         data=JSON.parse(data);
@@ -88,8 +88,8 @@ $(document).ready(function(){
       method:"post",
       url:"/mul",
       data:{
-        number1: $("#num21").val(),
-        number2: $("#num23").val()
+        num1: $("#num21").val(),
+        num2: $("#num23").val()
       },
       success: function(data, status){
         data=JSON.parse(data);
@@ -111,8 +111,8 @@ $(document).ready(function(){
       method:"post",
       url:"/div",
       data:{
-        number1: $("#num31").val(),
-        number2: $("#num32").val()
+        num1: $("#num31").val(),
+        num2: $("#num32").val()
       },
       success: function(data, status){
         data=JSON.parse(data);
@@ -130,8 +130,9 @@ $(document).ready(function(){
   });
 });
 
-$( document ).ajaxError(function(event, jqxhr, settings, thrownError) {
-  if (thrownError=="Unauthorized") {
+$(document).ajaxError(function(event, jqxhr, settings, thrownError) {
+  data = JSON.parse(jqxhr.responseText);
+  if (data.message=="You are not currently logged in") {
     window.location="/";
   }
 });

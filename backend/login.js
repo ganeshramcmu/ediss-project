@@ -33,8 +33,11 @@ module.exports.checkSession = function(req, res, next)
       Destroy the session initialized in server.js.
       End the req res cycle with a 401 response status.
     */
+    response = {}
+    response.statusCode = 200;
+    response.message="You are not currently logged in";
     module.exports.destroySession(req.session);
-    res.status(401).end("UnAuthorized");
+    res.status(401).end(JSON.stringify(response));
   }
 };
 
@@ -60,7 +63,7 @@ module.exports.login = function(req, res, returnCode)
   if(!connection)
   {
     response.statusCode = 503;
-    response.message = "Database is down";
+    response.message = "There seems to be an issue with the username/password combination that you entered";
     returnCode(503,JSON.stringify(response));
   }
 
@@ -72,7 +75,7 @@ module.exports.login = function(req, res, returnCode)
       connection.end();
       module.exports.destroySession(req.session, user);
       response.statusCode = 500;
-      response.message = "Query failed. Try again";
+      response.message = "There seems to be an issue with the username/password combination that you entered";
       returnCode(500,JSON.stringify(response));
     }
     else
@@ -82,7 +85,7 @@ module.exports.login = function(req, res, returnCode)
         connection.end();
         module.exports.destroySession(req.session, user);
         response.statusCode = 400;
-        response.message = "User Not Registered";
+        response.message = "There seems to be an issue with the username/password combination that you entered";
         returnCode(400,JSON.stringify(response));
       }
       else
@@ -100,7 +103,7 @@ module.exports.login = function(req, res, returnCode)
               connection.end();
               module.exports.destroySession(req.session, user);
               response.statusCode = 500;
-              response.message = "Can't fetch user details. Please try again";
+              response.message = "There seems to be an issue with the username/password combination that you entered";
               returnCode(500,JSON.stringify(response));
             }
             else
@@ -109,7 +112,7 @@ module.exports.login = function(req, res, returnCode)
               delete rows[0].password;
               req.session.userDetails = rows[0];
               response.statusCode = 302;
-              response.message = "Success";
+              response.message = "Welcome "+rows[0].fullName;
               response.redirectUrl = SERVER_URI_PREFIX + "/arith";
               response.userDetails = rows[0];
 
@@ -123,7 +126,7 @@ module.exports.login = function(req, res, returnCode)
           connection.end();
           module.exports.destroySession(req.session, user);
           response.statusCode = 400;
-          response.message = "Incorrect Credentials";
+          response.message = "There seems to be an issue with the username/password combination that you entered";
           returnCode(400,JSON.stringify(response));
         }
       }
