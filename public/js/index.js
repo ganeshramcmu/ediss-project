@@ -22,7 +22,8 @@ $(document).ready(function(){
 			}
   		},
   		error:function(err){
-  			alert("There was some error. Try again");
+        resp = JSON.parse(err.responseText);
+  			alert(resp.message);
   		}
   	});
 
