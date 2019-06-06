@@ -72,7 +72,7 @@ module.exports.login = function(req, res, returnCode)
       connection.end();
       module.exports.destroySession(req.session, user);
       response.statusCode = 500;
-      response.message = "Try again";
+      response.message = "Query failed. Try again";
       returnCode(500,JSON.stringify(response));
     }
     else
@@ -100,7 +100,7 @@ module.exports.login = function(req, res, returnCode)
               connection.end();
               module.exports.destroySession(req.session, user);
               response.statusCode = 500;
-              response.message = "Please try again";
+              response.message = "Can't fetch user details. Please try again";
               returnCode(500,JSON.stringify(response));
             }
             else
