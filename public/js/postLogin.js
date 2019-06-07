@@ -7,10 +7,9 @@ $(document).ready(function(){
   		url:"/logout",
   		success:function(data, status){
 				dataObj = JSON.parse(data);
-        if (dataObj.statusCode==302) {
-          redirectUrl = dataObj.redirectUrl;
-          window.location=redirectUrl;
-        }
+        //redirectUrl = dataObj.redirectUrl;
+        redirectUrl = "/";
+        window.location=redirectUrl;
   		},
   		error:function(err){
   			//console.log(err);
@@ -47,15 +46,11 @@ $(document).ready(function(){
       },
       success: function(data, status){
         data=JSON.parse(data);
-        if (data.statusCode == 200) {
-          $("#addition").text("The result is "+data.result);
-        }
-        else if(data.statusCode == 500){
-          $("#addition").text(data.result);
-        }
+        $("#addition").text(data.message+"."+" The result is "+data.result);
       },
       error:function(err){
-        $("#addition").text(err);
+        data = JSON.parse(err.responseText);
+        $("#division").text(data.message);
       }
     });
   });
@@ -70,15 +65,11 @@ $(document).ready(function(){
       },
       success: function(data, status){
         data=JSON.parse(data);
-        if (data.statusCode == 200) {
-          $("#subtract").text("The result is "+data.result);
-        }
-        else if(data.statusCode == 500){
-          $("#subtract").text(data.result);
-        }
+        $("#subtract").text(data.message+"."+" The result is "+data.result);
       },
       error:function(err){
-        $("#subtract").text(err);
+        data = JSON.parse(err.responseText);
+        $("#division").text(data.message);
       }
     });
   });
@@ -86,22 +77,18 @@ $(document).ready(function(){
   $("#mulno").click(function(){
     $.ajax({
       method:"post",
-      url:"/mul",
+      url:"/multiply",
       data:{
         num1: $("#num21").val(),
         num2: $("#num23").val()
       },
       success: function(data, status){
         data=JSON.parse(data);
-        if (data.statusCode == 200) {
-          $("#multi").text("The result is "+data.result);
-        }
-        else if(data.statusCode == 500){
-          $("#multi").text(data.result);
-        }
+        $("#multi").text(data.message+"."+" The result is "+data.result);
       },
       error:function(err){
-        $("#multi").text(err);
+        data = JSON.parse(err.responseText);
+        $("#division").text(data.message);
       }
     });
   });
@@ -109,22 +96,18 @@ $(document).ready(function(){
   $("#divno").click(function(){
     $.ajax({
       method:"post",
-      url:"/div",
+      url:"/divide",
       data:{
         num1: $("#num31").val(),
         num2: $("#num32").val()
       },
       success: function(data, status){
         data=JSON.parse(data);
-        if (data.statusCode == 200) {
-          $("#division").text("The result is "+data.result);
-        }
-        else if(data.statusCode == 500){
-          $("#division").text(data.result);
-        }
+        $("#division").text(data.message+"."+" The result is "+data.result);
       },
       error:function(err){
-        $("#division").text(err);
+        data = JSON.parse(err.responseText);
+        $("#division").text(data.message);
       }
     });
   });

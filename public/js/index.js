@@ -16,10 +16,9 @@ $(document).ready(function(){
   		},
   		success:function(data, status){
   			dataObj = JSON.parse(data);
-			if (dataObj.statusCode==302) {
-				redirectUrl = dataObj.redirectUrl;
-				window.location=redirectUrl;
-			}
+				//redirectUrl = dataObj.redirectUrl;
+				redirectUrl = "/arith";
+        window.location=redirectUrl;
   		},
   		error:function(err){
         resp = JSON.parse(err.responseText);

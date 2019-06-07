@@ -34,20 +34,26 @@ module.exports.checkSession = function(req, res, next)
       End the req res cycle with a 401 response status.
     */
     response = {}
-    response.statusCode = 200;
+    statusCode = 401;
     response.message="You are not currently logged in";
     module.exports.destroySession(req.session);
-    res.status(401).end(JSON.stringify(response));
+    res.status(statusCode).end(JSON.stringify(response));
   }
 };
 
 module.exports.logout = function(req, res, next)
 {
+  response = {};
+  if (req.session.userDetails) {
   module.exports.destroySession(req.session);
   res.status(200);
-  response = {};
-  response.statusCode = 302;
-  response.redirectUrl = SERVER_URI_PREFIX;
+  //response.statusCode = 302;
+  //response.redirectUrl = SERVER_URI_PREFIX;
+  response.message="You have been successfully logged out";
+  } else{
+   res.status(401);
+   response.message="You are not currently logged in";
+  }
   res.send(JSON.stringify(response));
 };
 
@@ -58,13 +64,14 @@ module.exports.login = function(req, res, returnCode)
   var password = user.password;
   var authQuery = "SELECT userid, username, password FROM edissDB.UserProfile WHERE username = " + "'" + username + "';";
 
+  var statusCode=200;
   var connection = mysqlConnection.createMysqlConnection();
   response = {};
   if(!connection)
   {
-    response.statusCode = 503;
+    statusCode = 503;
     response.message = "There seems to be an issue with the username/password combination that you entered";
-    returnCode(503,JSON.stringify(response));
+    returnCode(statusCode,JSON.stringify(response));
   }
 
   connection.query(authQuery, function(err,rows,fields)
@@ -74,9 +81,9 @@ module.exports.login = function(req, res, returnCode)
     {
       connection.end();
       module.exports.destroySession(req.session, user);
-      response.statusCode = 500;
+      statusCode = 500;
       response.message = "There seems to be an issue with the username/password combination that you entered";
-      returnCode(500,JSON.stringify(response));
+      returnCode(statusCode,JSON.stringify(response));
     }
     else
     {
@@ -84,9 +91,9 @@ module.exports.login = function(req, res, returnCode)
       {
         connection.end();
         module.exports.destroySession(req.session, user);
-        response.statusCode = 400;
+        statusCode = 400;
         response.message = "There seems to be an issue with the username/password combination that you entered";
-        returnCode(400,JSON.stringify(response));
+        returnCode(statusCode,JSON.stringify(response));
       }
       else
       {
@@ -102,21 +109,21 @@ module.exports.login = function(req, res, returnCode)
             {
               connection.end();
               module.exports.destroySession(req.session, user);
-              response.statusCode = 500;
+              statusCode = 500;
               response.message = "There seems to be an issue with the username/password combination that you entered";
-              returnCode(500,JSON.stringify(response));
+              returnCode(statusCode,JSON.stringify(response));
             }
             else
             {
               connection.end();
               delete rows[0].password;
               req.session.userDetails = rows[0];
-              response.statusCode = 302;
+              statusCode = 200;
               response.message = "Welcome "+rows[0].fullName;
-              response.redirectUrl = SERVER_URI_PREFIX + "/arith";
-              response.userDetails = rows[0];
+              //response.redirectUrl = SERVER_URI_PREFIX + "/arith";
+              //response.userDetails = rows[0];
 
-              returnCode(200, JSON.stringify(response));
+              returnCode(statusCode, JSON.stringify(response));
             }
           });
 
@@ -125,9 +132,9 @@ module.exports.login = function(req, res, returnCode)
         {
           connection.end();
           module.exports.destroySession(req.session, user);
-          response.statusCode = 400;
+          statusCode = 400;
           response.message = "There seems to be an issue with the username/password combination that you entered";
-          returnCode(400,JSON.stringify(response));
+          returnCode(statusCode,JSON.stringify(response));
         }
       }
     }
