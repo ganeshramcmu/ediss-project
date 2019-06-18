@@ -57,6 +57,63 @@ module.exports.logout = function(req, res, next)
   res.send(JSON.stringify(response));
 };
 
+module.exports.registerUser = function(req, res)
+{
+  var fname = req.body.fname;
+  var lname = req.body.lname;
+  var address = req.body.address;
+  var city = req.body.city;
+  var state = req.body.state;
+  var zip = req.body.zip;
+  var email = req.body.email;
+  var username = req.body.username;
+  var password = req.body.password;
+  var input = req.body;
+  response = {}
+
+  statusCode = 200;
+  response.message = fname + " was registered successfully";
+
+  for (key in input){
+    if ((input[key] == null || input[key] =='')) {
+      statusCode = 422;
+      response.message = "The input you provided is not valid";
+    }
+  }
+
+  if (statusCode != 422) {
+
+    var connection = mysqlConnection.createMysqlConnection();
+
+    if(!connection)
+    {
+      statusCode = 503;
+      response.message = "The input you provided is not valid";
+    } else {
+      var sqlQuery = "INSERT INTO edissDB.UserProfile (fname, lname, address, city, state, zip, email, username, password) \
+      VALUES('" + fname + "','"+ lname + "','" + address + "','"+ city + "','" + state + "','"+ zip + "','" + email + "','"+ username + "','" + "','" + password +"')";
+      connection.query(sqlQuery, function(err,rows,fields){
+        connection.end();
+        if(err)
+        {
+          if(err.errno == 1062)
+          {
+            statusCode = 400;
+            response.message = "The input you provided is not valid";
+          }
+          else
+          {
+            statusCode=500;
+            response.message="The input you provided is not valid";
+          }
+        }
+      }
+    }
+  }
+
+  res.status(statusCode).send(JSON.stringify(response));
+}
+
 module.exports.login = function(req, res, returnCode)
 {
   user = req.body.user;

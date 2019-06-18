@@ -71,5 +71,11 @@ app.post("/add", loginHandler.checkSession, customerFunctions.addNumbers);
 app.post("/sub", loginHandler.checkSession, customerFunctions.subNumbers);
 app.post("/multiply", loginHandler.checkSession, customerFunctions.mulNumbers);
 app.post("/divide", loginHandler.checkSession, customerFunctions.divNumbers);
+app.post("/registerUser", loginHandler.registerUser);
+app.post("/updateInfo", loginHandler.checkSession, customerFunctions.updateInfo);
+app.post("/addProducts", loginHandler.checkSession, customerFunctions.checkIfAdmin, customerFunctions.addProduct);
+app.post("/modifyProduct", loginHandler.checkSession, customerFunctions.checkIfAdmin, customerFunctions.modifyProduct);
+app.post("/viewUsers", loginHandler.checkSession, customerFunctions.checkIfAdmin, customerFunctions.viewUsers);
+app.post("/viewProducts", customerFunctions.viewProducts);
 
 app.listen(3000);
