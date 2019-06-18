@@ -113,6 +113,7 @@ module.exports.updateInfo = function(req, res){
     {
       statusCode = 503;
       response.message = "The input you provided is not valid";
+      res.status(statusCode).send(JSON.stringify(response));
     } else {
     	connection.query(updateQuery, function(err, rows, fields){
 
@@ -122,10 +123,9 @@ module.exports.updateInfo = function(req, res){
     	    statusCode = 500;
     	    response.message = "The input you provided is not valid";
     	  }
-    	}
+    	  res.status(statusCode).send(JSON.stringify(response));
+    	});
     }
-
-	res.status(statusCode).send(JSON.stringify(response));
 }
 
 module.exports.addProduct = function(req, res){
@@ -147,8 +147,9 @@ module.exports.addProduct = function(req, res){
 		}
 	}
 
-	addProductQuery = addProductQuery.slice(0,-1);
-
+	addProductQuery = addProductQuery.slice(0,-2);
+	addProductQuery += ");"
+	
 	if (statusCode != 422) {
 		
 		var connection = mysqlConnection.createMysqlConnection();
@@ -157,6 +158,7 @@ module.exports.addProduct = function(req, res){
 		{
 		  statusCode = 503;
 		  response.message = "The input you provided is not valid";
+		  res.status(statusCode).send(JSON.stringify(response));
 		} else {
 			connection.query(addProductQuery, function(err, rows, fields){
 
@@ -179,14 +181,16 @@ module.exports.addProduct = function(req, res){
 			  	statusCode = 200;
 			  	response.message= input.productName + " was successfully added to the system";
 			  }
-			}
-		}
-	}
 
-	res.status(statusCode).send(JSON.stringify(response));
+			  res.status(statusCode).send(JSON.stringify(response));
+			});
+		}
+	} else {
+		res.status(statusCode).send(JSON.stringify(response));
+	}
 }
 
-module.exports.checkIfAdmin = function(req, res){
+module.exports.checkIfAdmin = function(req, res, next){
 	var input = req.body;
 
 	response = {}
@@ -207,7 +211,7 @@ module.exports.modifyProduct = function(req, res){
 
 	response = {}
 	statusCode = 200;
-	response.message= req.session.productName + " was successfully updated";
+	response.message= input.productName + " was successfully updated";
 
 	updateQuery = "UPDATE products SET ";
 	key1='pgroup';
@@ -241,6 +245,7 @@ module.exports.modifyProduct = function(req, res){
     	{
     	  statusCode = 503;
     	  response.message = "The input you provided is not valid";
+    	  res.status(statusCode).send(JSON.stringify(response));
     	} else {
     		connection.query(updateQuery, function(err, rows, fields){
     		  if (err)
@@ -249,11 +254,12 @@ module.exports.modifyProduct = function(req, res){
     		    statusCode = 500;
     		    response.message = "The input you provided is not valid";
     		  }
-    		}
+    		  res.status(statusCode).send(JSON.stringify(response));
+    		});
     	}
+    } else {
+    	res.status(statusCode).send(JSON.stringify(response));
     }
-
-	res.status(statusCode).send(JSON.stringify(response));
 }
 
 module.exports.viewUsers = function(req, res){
@@ -279,6 +285,7 @@ module.exports.viewUsers = function(req, res){
 	{
 	  statusCode = 503;
 	  response.message = "There are no users that match that criteria";
+	  res.status(statusCode).send(JSON.stringify(response));
 	} else {
 		connection.query(viewUsersQuery, function(err, rows, fields){
 		  
@@ -309,9 +316,9 @@ module.exports.viewUsers = function(req, res){
 		  		}
 		  	}
 		  }
-		}
+		  res.status(statusCode).send(JSON.stringify(response));
+		});
 	}
-	res.status(statusCode).send(JSON.stringify(response));
 }
 
 module.exports.viewProducts = function(req, res){
@@ -322,34 +329,29 @@ module.exports.viewProducts = function(req, res){
 
 	viewUsersQuery = "SELECT * FROM products";
 
-	if (input.asin !== null && input.asin !=='' && input.keyword == null && input.keyword =='' && input.group == null && input.group =='') {
-		viewUsersQuery = "SELECT * FROM products WHERE asin ="+ input.asin + ";";
+	asin = input.asin;
+	keyword = input.keyword;
+	group = input.group;
+
+	if (!asin) {
+		asin='';
 	}
-	else if (input.asin == null && input.asin =='' && input.keyword !== null && input.keyword !=='' && input.group == null && input.group =='') {
-		viewUsersQuery = "SELECT * FROM products WHERE productName LIKE '%"+ input.keyword + "%' OR productDescription LIKE '%" + input.keyword +"%';";
+	if (!keyword) {
+		keyword='';
 	}
-	else if (input.asin == null && input.asin =='' && input.keyword == null && input.keyword =='' && input.group !== null && input.group !=='') {
-		viewUsersQuery = "SELECT * FROM products WHERE pgroup ="+input.group+";";
+	if (!group) {
+		group='';
 	}
-	else if (input.asin == null && input.asin =='' && input.keyword !== null && input.keyword !=='' && input.group !== null && input.group !=='') {
-		viewUsersQuery = "SELECT * FROM products WHERE pgroup ="+input.group+ " AND (productName LIKE '%"+ input.keyword + "%' OR productDescription LIKE '%" + input.keyword +"%');";
-	}
-	else if (input.asin !== null && input.asin !=='' && input.keyword !== null && input.keyword !=='' && input.group !== null && input.group !=='') {
-		viewUsersQuery = "SELECT * FROM products WHERE asin ="+ input.asin +" AND pgroup ="+input.group+ " AND (productName LIKE '%"+ input.keyword + "%' OR productDescription LIKE '%" + input.keyword +"%');";
-	}
-	else if (input.asin !== null && input.asin !=='' && input.keyword !== null && input.keyword !=='' && input.group == null && input.group =='') {
-		viewUsersQuery = "SELECT * FROM products WHERE asin ="+ input.asin +" AND (productName LIKE '%"+ input.keyword + "%' OR productDescription LIKE '%" + input.keyword +"%');";
-	}
-	else if (input.asin !== null && input.asin !=='' && input.keyword == null && input.keyword =='' && input.group !== null && input.group !='') {
-		viewUsersQuery = "SELECT * FROM products WHERE asin ="+ input.asin +" AND pgroup = "+input.group;
-	}
+
+	viewUsersQuery = "SELECT * FROM products WHERE asin LIKE '%"+ asin +"%' AND pgroup LIKE '%"+group+ "%' AND (productName LIKE '%"+ keyword + "%' OR productDescription LIKE '%" + keyword +"%');";
 
 	var connection = mysqlConnection.createMysqlConnection();
-
+	
 	if(!connection)
 	{
 	  statusCode = 503;
-	  response.message = "There are no products that match that criteri";
+	  response.message = "There are no products that match that criteria";
+	  res.status(statusCode).send(JSON.stringify(response));
 	} else {
 		connection.query(viewUsersQuery, function(err, rows, fields){
 		  
@@ -357,14 +359,15 @@ module.exports.viewProducts = function(req, res){
 		  {
 		    connection.end();
 		    statusCode = 500;
-		    response.message = "There are no products that match that criteri";
+		    response.message = "There are no products that match that criteria";
 		  }
 		  else {
+		  	
 		  	if(rows.length <= 0)
 		  	{
 		  	  connection.end();
 		  	  statusCode = 500;
-		  	  response.message = "There are no products that match that criteri";
+		  	  response.message = "There are no products that match that criteria";
 		  	}
 		  	else {
 		  		connection.end();
@@ -372,16 +375,17 @@ module.exports.viewProducts = function(req, res){
 		  		//response.message = "The action was successful"
 		  		response.product = [];
 		  		for (var i = 0; i < rows.length; i++) {
+		  			console.log(rows[i]);
 		  			var obj = {};
 		  			obj.asin = rows[i].asin;
 		  			obj.productName = rows[i].productName;
-		  			response.user.push(obj);
+		  			response.product.push(obj);
 		  		}
 		  	}
 		  }
-		}
+		  res.status(statusCode).send(JSON.stringify(response));
+		});
 	}
-	res.status(statusCode).send(JSON.stringify(response));
 }
 
 

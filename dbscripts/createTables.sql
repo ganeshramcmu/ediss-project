@@ -24,3 +24,5 @@ productName VARCHAR(300) NOT NULL,
 productDescription VARCHAR(1000) NOT NULL,
 pgroup VARCHAR(128) NOT NULL
 );
+
+INSERT INTO edissDB.UserProfile(fname,lname,address,city,state,zip,email,username,password) VALUES('Jenny','Admin','d','d','d','d','d','jadmin','admin');

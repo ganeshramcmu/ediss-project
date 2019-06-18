@@ -90,24 +90,24 @@ module.exports.registerUser = function(req, res)
       statusCode = 503;
       response.message = "The input you provided is not valid";
     } else {
-      var sqlQuery = "INSERT INTO edissDB.UserProfile (fname, lname, address, city, state, zip, email, username, password) \
-      VALUES('" + fname + "','"+ lname + "','" + address + "','"+ city + "','" + state + "','"+ zip + "','" + email + "','"+ username + "','" + "','" + password +"')";
+      var sqlQuery = "INSERT INTO edissDB.UserProfile (fname, lname, address, city, state, zip, email, username, password) VALUES('" + fname + "','"+ lname + "','" + address + "','"+ city + "','" + state + "','"+ zip + "','" + email + "','"+ username + "','" + password +"')";
       connection.query(sqlQuery, function(err,rows,fields){
         connection.end();
-        if(err)
-        {
-          if(err.errno == 1062)
-          {
+        if(err){
+          if(err.errno == 1062){
             statusCode = 400;
             response.message = "The input you provided is not valid";
           }
-          else
-          {
+          else{
             statusCode=500;
             response.message="The input you provided is not valid";
           }
         }
-      }
+        else {
+          statusCode=200;
+          response.message = fname + " was registered successfully";
+        }
+      });
     }
   }
 
@@ -116,11 +116,10 @@ module.exports.registerUser = function(req, res)
 
 module.exports.login = function(req, res, returnCode)
 {
-  user = req.body.user;
+  user = req.body;
   var username = user.username;
   var password = user.password;
-  var authQuery = "SELECT userid, username, password FROM edissDB.UserProfile WHERE username = " + "'" + username + "';";
-
+  var authQuery = "SELECT * FROM edissDB.UserProfile WHERE username = " + "'" + username + "';";
   var statusCode=200;
   var connection = mysqlConnection.createMysqlConnection();
   response = {};
@@ -153,13 +152,12 @@ module.exports.login = function(req, res, returnCode)
         returnCode(statusCode,JSON.stringify(response));
       }
       else
-      {
+      { 
         if(rows[0].password === password)
         {
           //retrieve user's data from db and set user's session
 
           var userDataQuery = "SELECT * FROM UserProfile WHERE userid = " + rows[0].userid;
-
           connection.query(userDataQuery, function(err, rows, fields){
 
             if (err)
@@ -176,7 +174,7 @@ module.exports.login = function(req, res, returnCode)
               delete rows[0].password;
               req.session.userDetails = rows[0];
               statusCode = 200;
-              response.message = "Welcome "+rows[0].fullName;
+              response.message = "Welcome "+rows[0].fname;
               //response.redirectUrl = SERVER_URI_PREFIX + "/arith";
               //response.userDetails = rows[0];
 
