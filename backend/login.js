@@ -1,5 +1,11 @@
 //Handles login functionality
-var mysqlConnection = require('./mysqlConnection.js');
+//var mysqlConnection = require('./mysqlConnection.js');
+var mysql = require('../node_modules/mysql');
+var globals = require('../globals.js');
+user_password = "edissproject";
+if (!globals.testing) {
+  user_password = "EdissProject123$";
+}
 
 module.exports = {};
 
@@ -83,7 +89,23 @@ module.exports.registerUser = function(req, res)
 
   if (statusCode != 422) {
 
-    var connection = mysqlConnection.createMysqlConnection();
+    //var connection = mysqlConnection.createMysqlConnection();
+    var connection = mysql.createConnection({
+      host : 'localhost',
+      user : 'ediss',
+      password : user_password,
+      database : 'edissDB'
+    });
+
+    connection.connect(
+      function(err)
+      {
+        if(err)
+        {
+          return false;
+        }
+      }
+    );
 
     if(!connection)
     {
@@ -121,7 +143,23 @@ module.exports.login = function(req, res, returnCode)
   var password = user.password;
   var authQuery = "SELECT * FROM edissDB.UserProfile WHERE username = " + "'" + username + "';";
   var statusCode=200;
-  var connection = mysqlConnection.createMysqlConnection();
+  //var connection = mysqlConnection.createMysqlConnection();
+  var connection = mysql.createConnection({
+    host : 'localhost',
+    user : 'ediss',
+    password : user_password,
+    database : 'edissDB'
+  });
+
+  connection.connect(
+    function(err)
+    {
+      if(err)
+      {
+        return false;
+      }
+    }
+  );
   response = {};
   if(!connection)
   {

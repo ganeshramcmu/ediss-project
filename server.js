@@ -14,7 +14,10 @@ app.use(session({
 	saveUninitialized: false,
 	cookie: {
 		name: "sid",
-		maxAge: 900000
+		maxAge: 900000,
+		rolling: true,
+		resave: true,
+		saveUninitialized: true
 	}
 }));
 

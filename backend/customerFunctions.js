@@ -1,4 +1,11 @@
-var mysqlConnection = require('./mysqlConnection');
+//var mysqlConnection = require('./mysqlConnection');
+var mysql = require('../node_modules/mysql');
+var globals = require('../globals.js');
+
+user_password = "edissproject";
+if (!globals.testing) {
+	user_password = "EdissProject123$";
+}
 
 module.exports = {};
 
@@ -31,7 +38,24 @@ module.exports.updateInfo = function(req, res){
 
 	updateQuery += " WHERE `userid` = " + req.session.userDetails.userid;
 
-	var connection = mysqlConnection.createMysqlConnection();
+	//var connection = mysqlConnection.createMysqlConnection();
+	var connection = mysql.createConnection({
+		host : 'localhost',
+		user : 'ediss',
+		password : user_password,
+		database : 'edissDB'
+	});
+
+	connection.connect(
+		function(err)
+		{
+		  if(err)
+		  {
+		    return false;
+		  }
+		  console.log('connected as id ' + connection.threadId);
+		}
+	);
 
     if(!connection)
     {
@@ -76,7 +100,24 @@ module.exports.addProduct = function(req, res){
 	
 	if (statusCode != 422) {
 		
-		var connection = mysqlConnection.createMysqlConnection();
+		//var connection = mysqlConnection.createMysqlConnection();
+		var connection = mysql.createConnection({
+			host : 'localhost',
+			user : 'ediss',
+			password : user_password,
+			database : 'edissDB'
+		});
+
+		connection.connect(
+			function(err)
+			{
+			  if(err)
+			  {
+			    return false;
+			  }
+			  console.log('connected as id ' + connection.threadId);
+			}
+		);
 
 		if(!connection)
 		{
@@ -163,7 +204,24 @@ module.exports.modifyProduct = function(req, res){
 
     if (statusCode!=422) {
     	
-    	var connection = mysqlConnection.createMysqlConnection();
+    	//var connection = mysqlConnection.createMysqlConnection();
+    	var connection = mysql.createConnection({
+    		host : 'localhost',
+    		user : 'ediss',
+    		password : user_password,
+    		database : 'edissDB'
+    	});
+
+    	connection.connect(
+    		function(err)
+    		{
+    		  if(err)
+    		  {
+    		    return false;
+    		  }
+    		  console.log('connected as id ' + connection.threadId);
+    		}
+    	);
 
     	if(!connection)
     	{
@@ -203,7 +261,24 @@ module.exports.viewUsers = function(req, res){
 		viewUsersQuery = "SELECT * FROM UserProfile WHERE fname LIKE '%"+ input.fname + "%' OR lname LIKE '%" + input.lname +"%';";
 	}
 
-	var connection = mysqlConnection.createMysqlConnection();
+	//var connection = mysqlConnection.createMysqlConnection();
+	var connection = mysql.createConnection({
+		host : 'localhost',
+		user : 'ediss',
+		password : user_password,
+		database : 'edissDB'
+	});
+
+	connection.connect(
+		function(err)
+		{
+		  if(err)
+		  {
+		    return false;
+		  }
+		  console.log('connected as id ' + connection.threadId);
+		}
+	);
 
 	if(!connection)
 	{
@@ -269,7 +344,24 @@ module.exports.viewProducts = function(req, res){
 
 	viewUsersQuery = "SELECT * FROM products WHERE asin LIKE '%"+ asin +"%' AND pgroup LIKE '%"+group+ "%' AND (productName LIKE '%"+ keyword + "%' OR productDescription LIKE '%" + keyword +"%');";
 
-	var connection = mysqlConnection.createMysqlConnection();
+	//var connection = mysqlConnection.createMysqlConnection();
+	var connection = mysql.createConnection({
+		host : 'localhost',
+		user : 'ediss',
+		password : user_password,
+		database : 'edissDB'
+	});
+
+	connection.connect(
+		function(err)
+		{
+		  if(err)
+		  {
+		    return false;
+		  }
+		  console.log('connected as id ' + connection.threadId);
+		}
+	);
 	
 	if(!connection)
 	{
@@ -317,7 +409,24 @@ module.exports.purchaseProducts = function(req, res){
 	input = req.body;
 	response = {};
 	statusCode = 200;
-	var connection = mysqlConnection.createMysqlConnection();
+	//var connection = mysqlConnection.createMysqlConnection();
+	var connection = mysql.createConnection({
+		host : 'localhost',
+		user : 'ediss',
+		password : user_password,
+		database : 'edissDB'
+	});
+
+	connection.connect(
+		function(err)
+		{
+		  if(err)
+		  {
+		    return false;
+		  }
+		  console.log('connected as id ' + connection.threadId);
+		}
+	);
 	
 	if(!connection)
 	{
@@ -446,7 +555,24 @@ module.exports.purchaseProducts = function(req, res){
 
 prepareRecommendations = function(products){
 	console.log("Handle Together-Purchase")
-	var connection = mysqlConnection.createMysqlConnection();
+	//var connection = mysqlConnection.createMysqlConnection();
+	var connection = mysql.createConnection({
+		host : 'localhost',
+		user : 'ediss',
+		password : user_password,
+		database : 'edissDB'
+	});
+
+	connection.connect(
+		function(err)
+		{
+		  if(err)
+		  {
+		    return false;
+		  }
+		  console.log('connected as id ' + connection.threadId);
+		}
+	);
 	
 	if(!connection)
 	{
@@ -505,7 +631,24 @@ module.exports.productsPurchased = function(req, res){
 	var username=req.body.username;
 	response={};
 	statusCode=200;
-	var connection = mysqlConnection.createMysqlConnection();
+	//var connection = mysqlConnection.createMysqlConnection();
+	var connection = mysql.createConnection({
+		host : 'localhost',
+		user : 'ediss',
+		password : user_password,
+		database : 'edissDB'
+	});
+
+	connection.connect(
+		function(err)
+		{
+		  if(err)
+		  {
+		    return false;
+		  }
+		  console.log('connected as id ' + connection.threadId);
+		}
+	);
 	
 	if(!connection)
 	{
@@ -556,8 +699,24 @@ module.exports.getRecommendations = function(req, res){
     console.log(asin);
 	response={};
 	statusCode=200;
-	var connection = mysqlConnection.createMysqlConnection();
-	
+	//var connection = mysqlConnection.createMysqlConnection();
+	var connection = mysql.createConnection({
+		host : 'localhost',
+		user : 'ediss',
+		password : user_password,
+		database : 'edissDB'
+	});
+
+	connection.connect(
+		function(err)
+		{
+		  if(err)
+		  {
+		    return false;
+		  }
+		  console.log('connected as id ' + connection.threadId);
+		}
+	);
 	if(!connection)
 	{
 	  statusCode = 503;
@@ -587,6 +746,3 @@ module.exports.getRecommendations = function(req, res){
 		});
 	}
 }
-
-
-

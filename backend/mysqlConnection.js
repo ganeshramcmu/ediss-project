@@ -24,6 +24,7 @@ module.exports.createMysqlConnection = function()
 		  {
 		    return false;
 		  }
+		  console.log('connected as id ' + connection.threadId);
 		  return connection;
 		}
 	);
