@@ -73,5 +73,8 @@ app.post("/addProducts", loginHandler.checkSession, customerFunctions.checkIfAdm
 app.post("/modifyProduct", loginHandler.checkSession, customerFunctions.checkIfAdmin, customerFunctions.modifyProduct);
 app.post("/viewUsers", loginHandler.checkSession, customerFunctions.checkIfAdmin, customerFunctions.viewUsers);
 app.post("/viewProducts", customerFunctions.viewProducts);
+app.post("/buyProducts", loginHandler.checkSession, customerFunctions.purchaseProducts);
+app.post("/productsPurchased", loginHandler.checkSession, customerFunctions.checkIfAdmin, customerFunctions.productsPurchased);
+app.post("/getRecommendations", loginHandler.checkSession, customerFunctions.getRecommendations);
 
 app.listen(3002);

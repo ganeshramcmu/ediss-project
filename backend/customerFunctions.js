@@ -542,10 +542,10 @@ module.exports.productsPurchased = function(req, res){
 							}
 						}
 						res.status(statusCode).send(JSON.stringify(response));
-					}
+					});
 				}
 			}
-		}
+		});
 	}
 }
 
