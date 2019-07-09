@@ -11,82 +11,6 @@ module.exports.getUserDetails = function(req, res){
 	
 };
 
-module.exports.addNumbers = function(req, res){
-	
-	var num1 = Number(req.body.num1);
-	var num2 = Number(req.body.num2);
-
-	response = {}
-	statusCode = 200;
-	response.message="The action was successful";
-
-	if(typeof num1 == 'number' && typeof num2 == 'number'){
-		response.result = num1 + num2;
-	} else {
-		statusCode = 422;
-		response.message = "The numbers you entered are not valid";
-	}
-	res.status(statusCode).send(JSON.stringify(response));
-}
-
-module.exports.subNumbers = function(req, res){
-	var num1 = Number(req.body.num1);
-	var num2 = Number(req.body.num2);
-
-	response = {}
-	statusCode = 200;
-	response.message="The action was successful";
-
-	if(typeof num1 == 'number' && typeof num2 == 'number'){
-		response.result = num1 - num2;
-	} else {
-		statusCode = 422;
-		response.message = "The numbers you entered are not valid";
-	}
-	res.status(statusCode).send(JSON.stringify(response));
-}
-
-module.exports.mulNumbers = function(req, res){
-	var num1 = Number(req.body.num1);
-	var num2 = Number(req.body.num2);
-
-	response = {}
-	statusCode = 200;
-	response.message="The action was successful";
-
-	if(typeof num1 == 'number' && typeof num2 == 'number'){
-		response.result = num1*num2;
-	} else {
-		statusCode = 422;
-		response.message = "The numbers you entered are not valid";
-	}
-	res.status(statusCode).send(JSON.stringify(response));
-}
-
-module.exports.divNumbers = function(req, res){
-	var num1 = Number(req.body.num1);
-	var num2 = Number(req.body.num2);
-
-	response = {}
-	statusCode = 200;
-	response.message="The action was successful";
-
-	if(typeof num1 == 'number' && typeof num2 == 'number'){
-		if (num2 == 0) {
-			statusCode = 422;
-			response.message = "The numbers you entered are not valid";
-		}
-		else{
-			//response.result = (num1/num2).toFixed(2);
-			response.result = num1/num2;
-		}
-	} else {
-		statusCode = 422;
-		response.message = "The numbers you entered are not valid";
-	}
-	res.status(statusCode).send(JSON.stringify(response));
-}
-
 module.exports.updateInfo = function(req, res){
 	var input = req.body;
 
@@ -388,8 +312,281 @@ module.exports.viewProducts = function(req, res){
 	}
 }
 
+module.exports.purchaseProducts = function(req, res){
+	//login required;
+	input = req.body;
+	response = {};
+	statusCode = 200;
+	var connection = mysqlConnection.createMysqlConnection();
+	
+	if(!connection)
+	{
+	  statusCode = 503;
+	  response.message = "There are no products that match that criteria";
+	  res.status(statusCode).send(JSON.stringify(response));
+	} else {
+		var inputLength = input.products.length;
+		asinCSV='';
+		asinList=[];
+		if (inputLength) {
+			for (var i = 0; i < inputLength; i++) {
+				asinList[i]= input.products[i].asin;
+			}
+			asinCSV=asinList.join(',');
 
+			// Start the transaction
+			connection.beginTransaction(function(err){
+				if (err) {
+					console.log(err);
+					connection.end();
+					statusCode = 500;
+					response.message = "There are no products that match that criteria";
+					res.status(statusCode).send(JSON.stringify(response));
+				} else {
+					q1= "SELECT COUNT(*) FROM products WHERE asin in ("+asinCSV+");";
+					connection.query(q1, function(err, rows, fields){
+						if (err) {
+						  statusCode = 500;
+						  response.message = "There are no products that match that criteria";
+						  res.status(statusCode).send(JSON.stringify(response));
+						  return connection.rollback(function() {
+						    connection.end();
+						  });
+						}
+						else {
+							if(rows.length <= 0)
+							{
+							  statusCode = 500;
+							  response.message = "There are no products that match that criteria";
+							  res.status(statusCode).send(JSON.stringify(response));
+							  return connection.rollback(function() {
+							    connection.end();
+							  });
+							} else {
+								if (rows[0].count) {
+									// proceed with creating a new order
+									q2 = "INSERT INTO Orders (userid) VALUES ("+ req.session.userDetails.userid + ");";
+									connection.query(q2, function(err, rows, fields){
+										if (err)
+										{
+										  statusCode = 500;
+										  response.message = "There are no products that match that criteria";
+										  res.status(statusCode).send(JSON.stringify(response));
+										  return connection.rollback(function() {
+										    connection.end();
+										  });
+										} else {
+											if(rows.length <= 0)
+											{
+											  statusCode = 500;
+											  response.message = "There are no products that match that criteria";
+											  res.status(statusCode).send(JSON.stringify(response));
+											  return connection.rollback(function() {
+											    connection.end();
+											  });
+											} else {
+												orderid = rows[0].insertId;
+												// insert products and order into product order map table
+												q3 = "INSERT INTO ProductOrderMap (orderid, asin) VALUES ?";
+												values = [];
+												for (var i = 0; i < asinList.length; i++) {
+													values[i] = [orderid, asinList[i]];
+												}
+												connection.query(q3, [values], function(err, rows, fields){
+													if (err) {
+														throw err;
+													} else {
+														if (rows.changedRows == 0) {
+															statusCode = 500;
+															response.message = "There are no products that match that criteria";
+															res.status(statusCode).send(JSON.stringify(response));
+															return connection.rollback(function() {
+															  connection.end();
+															});
+														} else {
+															connection.end();
+															statusCode = 200;
+															response.message = "The action was successful";
+															connection.commit(function(err) {
+														        if (err) {
+														          return connection.rollback();
+														        }
+														        //prepare recommendations
+														        prepareRecommendations(input.body.products);
+														        res.status(statusCode).send(JSON.stringify(response));
+														    });
+														}
+													}
+													res.status(statusCode).send(JSON.stringify(response));
+												});
+											}
+										}
+									});
+								} else {
+									//end transaction
+									statusCode = 500;
+									response.message = "There are no products that match that criteria";
+									res.status(statusCode).send(JSON.stringify(response));
+									return connection.rollback(function() {
+									  connection.end();
+									});
+								}
+							}
+						}
+					});
+				}
+			});
+		} else {
+			statusCode = 503;
+			response.message = "There are no products that match that criteria";
+			res.status(statusCode).send(JSON.stringify(response));
+		}
+	}
+}
 
+prepareRecommendations = function(products){
+	console.log("Handle Together-Purchase")
+	var connection = mysqlConnection.createMysqlConnection();
+	
+	if(!connection)
+	{
+	  statusCode = 503;
+	  response.message = "There are no products that match that criteria";
+	  res.status(statusCode).send(JSON.stringify(response));
+	} else {
+		for(var i = 0; i < products.length; i++) {
+		    const asin = products[i].asin;
+		    console.log(asin);
+		    for(var j = 0; j < products.length; j++) {
+		        const productId = products[j].asin;
+		        console.log(productId);
+		        if(asin.localeCompare(productId) == 0) {
+		            console.log("Same Product Match")
+		            continue;
+		        }
+		        else {
+		            console.log("Different Product")
+		            connection.query("SELECT * FROM recommendations WHERE asin = ? AND productId = ?", [asin, productId], function(err, rows, fields) {
+		                if(err) {
+		                    console.log("Database Error")
+		                }
+		                else if(rows.length == 0) {
+		                    var together_index = 1
+		                    connection.query("INSERT INTO recommendations(asin, productId, together_index) VALUES (?, ?, ?)", [asin, productId, together_index], function(err, rows, fields) {
+		                        if(err) {
+		                            console.log("Database Error!")
+		                        }
+		                        else {
+		                            console.log("Recommendations Entry Added!")
+		                        }
+		                    });
+		                }
+		                else {
+		                    const new_together_index = rows[0].together_index + 1;
+		                    connections.query("UPDATE recommendations SET together_index = ? WHERE asin = ? AND productId = ?", [new_together_index, asin, productId], function(err, rows, fields) {
+		                        if(err) {
+		                            console.log("Database Error :(");
+		                        }
+		                        else {
+		                            console.log("Recommendation Updated")
+		                        }
+		                    });
+		                }
+		            });
+		        }
+		    }
+		}
+	}
+}
+
+module.exports.productsPurchased = function(req, res){
+	// admin access required
+
+	var username=req.body.username;
+	response={};
+	statusCode=200;
+	var connection = mysqlConnection.createMysqlConnection();
+	
+	if(!connection)
+	{
+	  statusCode = 503;
+	  response.message = "There are no products that match that criteria";
+	  res.status(statusCode).send(JSON.stringify(response));
+	} else {
+		checkUserQuery = "SELECT userid FROM UserProfile WHERE username='"+username+"';";
+		connection.query(checkUserQuery, function(err, rows, fields){
+			if (err) {
+			  statusCode = 500;
+			  response.message = "There are no users that match that criteria";
+			  res.status(statusCode).send(JSON.stringify(response));
+			} else {
+				if (rows.length <=0) {
+					statusCode = 500;
+					response.message = "There are no users that match that criteria";
+					res.status(statusCode).send(JSON.stringify(response));
+				} else {
+					userid = rows[0].userid;
+					retreiveItemsQuery = "SELECT p.productName as productName, COUNT(*) as quantity FROM ProductOrderMap AS pm INNER JOIN Orders AS o ON pm.orderid=o.orderid INNER JOIN products AS p ON pm.asin=p.asin WHERE o.userid="+userid+" GROUP BY pm.asin;"
+					connection.query(retreiveItemsQuery, function(err, rows, fields){
+						if (err) {
+						  statusCode = 500;
+						  response.message = "There are no users that match that criteria";
+						} else {
+							if (rows.length <=0) {
+								statusCode = 500;
+								response.message = "There are no users that match that criteria";
+							} else {
+								statusCode=200;
+								response.products=rows;
+								response.message="The action was successful";
+							}
+						}
+						res.status(statusCode).send(JSON.stringify(response));
+					}
+				}
+			}
+		}
+	}
+}
+
+module.exports.getRecommendations = function(req, res){
+	console.log("Handle Product Recommendations")
+
+    var asin = req.body.asin
+    console.log(asin);
+	response={};
+	statusCode=200;
+	var connection = mysqlConnection.createMysqlConnection();
+	
+	if(!connection)
+	{
+	  statusCode = 503;
+	  response.message = "There are no products that match that criteria";
+	  res.status(statusCode).send(JSON.stringify(response));
+	} else {
+		connection.query("SELECT productId FROM recommendations WHERE asin = ? ORDER BY together_index DESC LIMIT 5", [asin], function(err, rows, fields) {
+		    if(err) {
+		        console.log("Database Error!");
+		        statusCode=500;
+		        response.message = "There are no recommendations for that product";
+		        res.status(statusCode).send(JSON.stringify(response));
+		    }
+		    else if(results.length == 0) {
+		        console.log("No together_index");
+		        statusCode=500;
+		        response.message= "There are no recommendations for that product";
+		        res.status(statusCode).send(JSON.stringify(response));
+		    }
+		    else {
+		        console.log("Yes together_index");
+		        statusCode=500;
+		        response.message= "The action was successful";
+		        response.products= rows;
+		        res.status(statusCode).send(JSON.stringify(response));
+		    }
+		});
+	}
+}
 
 
 

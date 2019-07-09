@@ -24,9 +24,8 @@ module.exports.createMysqlConnection = function()
 		  {
 		    return false;
 		  }
+		  return connection;
 		}
 	);
-
-	return connection;
 
 };
